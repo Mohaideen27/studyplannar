@@ -1,122 +1,79 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import {
+  addSubject,
+  addTasks,
+  deleteSubject,
+  deleteTask,
+  getSubjects,
+  getTasks,
+  updateSubject,
+  updateTask,
+} from "./api";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [subjecs, setSubjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [subjectName, setSubjectName] = useState("");
+  const [editingSubjectId, setEditingSubjectId] = useState(null);
+  const [title, setTitle] = useState("");
+  const [subjectId, setSubjectId] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState("Medium");
+  const [estimateMinutes, setEstimatedMinutes] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+
+  const [search, setSearch] = useState("");
+  const [filterSubject, setFilterSubject] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterPriority, setFilterPriority] = useState("All");
+
+  const [error, setError] = useState("");
+
+  const loadData = async () => {
+    try {
+      setError("");
+      const subjectData = await getSubjects();
+      const taskData = await getTasks();
+      setSubjects(subjectData);
+      setTasks(taskData);
+    } catch (error) {
+      setError("Cannot connect to the backend. start JSON Server");
+    }
+  };
+  useEffect(() => {
+    loadData();
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <div className="app">
+      <header className="header">
         <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
+          <h1>Study Planner</h1>
+          <p>Your personal study planner</p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+      </header>
+      {error && <p className="error">{error}</p>}
+      <section className="dashboard">
+        {/* <div className="stat-card">
+          <h3>Total Subjects</h3>
+          <p>{totalSubjects}</p>
+        </div> */}
       </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+      <section className="card">
+        <h2>Manage Subjects</h2>
+        <form onSubmit={handleSubjectSubmit}>
+          <input
+            type="text"
+            placeholder="Enter Subject name"
+            value={subjectName}
+            onChange={(event) => {
+              setSubjectName(event.target.value);
+            }} git 
+          />
+        </form>
       </section>
+    </div>
+  );
+};
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+export default App;
