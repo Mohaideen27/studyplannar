@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Weekly Study Tracker</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #e0e7ff;
+            --secondary: #6b7280;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --success-bg: #ecfdf5;
+            --success-text: #065f46;
+            --danger-bg: #fef2f2;
+            --danger-text: #991b1b;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Layout --- */
+        /* FIX: Changed width: 100% to flex: 1 to prevent desktop overflow */
+        .app-container { display: flex; flex: 1; width: 0; height: 100%; }
+        
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 50;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow);
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        aside.open { transform: translateX(0); }
+        
+        /* Desktop Sidebar always visible */
+        @media (min-width: 1024px) {
+            aside { position: relative; transform: translateX(0); box-shadow: none; }
+            .mobile-header { display: none; }
+            
+            /* FIX: Hide overlay and close button on desktop to prevent resize bugs */
+            .overlay { display: none !important; }
+            #close-sidebar { display: none !important; }
+        }
+
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-title { font-size: 1.25rem; font-weight: 700; color: var(--primary); margin: 0; }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem; }
+        .sidebar-footer { padding: 1rem; border-top: 1px solid var(--border); background: #f9fafb; }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-color);
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            scroll-behavior: smooth;
+        }
+        
+        @media (min-width: 1024px) {
+            .content-scroll { padding: 2rem; }
+        }
+
+        /* Header & Controls */
+        .mobile-header {
+            background: var(--card-bg);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            z-index: 40;
+        }
+
+        .plan-controls {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .plan-controls { flex-direction: row; align-items: center; justify-content: space-between; }
+            .control-group { display: flex; gap: 1rem; align-items: center; }
+        }
+
+        /* --- Components --- */
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+            text-decoration: none;
+            gap: 0.5rem;
+        }
+        .btn-icon { padding: 0.5rem; background: transparent; color: var(--secondary); cursor: pointer; border: none; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-ghost { background: transparent; color: var(--text-muted); }
+        .btn-ghost:hover { background: var(--bg-color); color: var(--primary); }
+        .btn-light { background: var(--primary-light); color: var(--primary); width: 100%; justify-content: flex-start; margin-bottom: 0.5rem; }
+        .btn-danger-light { background: var(--danger-bg); color: var(--danger-text); width: 100%; justify-content: flex-start; }
+        
+        /* Inputs & Selects */
+        .form-control {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--card-bg);
+            font-size: 0.875rem;
+        }
+        .form-control:disabled { background: var(--bg-color); color: var(--text-muted); cursor: not-allowed; }
+        
+        .input-group { display: flex; gap: 0.5rem; }
+
+        /* Day Card */
+        .day-card {
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        /* Mobile View: Hide days by default, show active */
+        @media (max-width: 768px) {
+            .day-card { display: none; margin-bottom: 0; height: 100%; border: none; box-shadow: none; border-radius: 0; }
+            .day-card.active { display: flex; flex-direction: column; }
+            .day-card-header { border-radius: 0.5rem; margin: 0.5rem; }
+            .day-content-wrapper { flex: 1; overflow-y: auto; padding-bottom: 80px; } /* Space for swipe area */
+        }
+
+        .day-card-header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-row {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0.5rem;
+        }
+        .table-row:last-child { border-bottom: none; }
+        .table-row.done { background-color: var(--success-bg); }
+
+        .col-check { width: 40px; display: flex; justify-content: center; padding-top: 0.5rem; }
+        .col-content { flex: 1; padding-right: 0.5rem; }
+        
+        .row-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+        @media (min-width: 640px) {
+            .row-stack { flex-direction: row; }
+            .row-stack > * { flex: 1; }
+        }
+
+        .checkbox { width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: var(--primary); }
+
+        /* Navigation Links */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            border-radius: 0.375rem;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        .nav-link:hover, .nav-link.active { background: var(--primary-light); color: var(--primary-dark); }
+        .nav-badge {
+            background: #e5e7eb;
+            color: #6b7280;
+            width: 1.5rem; height: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 0.25rem;
+            margin-right: 0.75rem;
+            font-size: 0.75rem; font-weight: bold;
+        }
+        .nav-link.active .nav-badge { background: #c7d2fe; color: var(--primary-dark); }
+
+        /* Progress Bar */
+        .progress-container { width: 100%; background: #e5e7eb; height: 0.625rem; border-radius: 9999px; margin-top: 0.5rem; overflow: hidden; }
+        .progress-fill { background: var(--primary); height: 100%; width: 0%; transition: width 0.5s ease; }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .font-bold { font-weight: 700; }
+        .text-muted { color: var(--text-muted); }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .ml-2 { margin-left: 0.5rem; }
+        
+        /* Status Badge */
+        .status-badge {
+            font-size: 0.75rem; padding: 0.125rem 0.5rem; border-radius: 0.25rem;
+            display: flex; align-items: center; gap: 0.25rem;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .status-badge.visible { opacity: 1; }
+        .status-saving { background: #fef3c7; color: #92400e; }
+        .status-saved { background: var(--success-bg); color: var(--success-text); }
+
+        /* Overlay */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 45; display: none; }
+        .overlay.show { display: block; }
+        
+        /* SVG Icons */
+        .icon { width: 1.25rem; height: 1.25rem; fill: currentColor; }
+        .icon-lg { width: 1.5rem; height: 1.5rem; }
+
+        /* Mobile Day Indicator */
+        .mobile-day-indicator {
+            display: none;
+            text-align: center;
+            padding: 0.5rem;
+            background: white;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        @media(max-width: 768px) {
+            .mobile-day-indicator { display: block; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Overlay -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">Tracker</h2>
+            <button class="btn-icon" id="close-sidebar" aria-label="Close Sidebar">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav" id="nav-links">
+            <!-- Nav links generated by JS -->
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="flex justify-between text-sm mb-1">
+                <span>Progress</span>
+                <span id="total-progress" class="font-bold" style="color: var(--primary);">0%</span>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-fill"></div>
+            </div>
+            
+            <div style="margin-top: 1.5rem;">
+                <p class="text-xs text-muted font-bold" style="text-transform: uppercase; margin-bottom: 0.5rem;">Plan Actions</p>
+                <button onclick="createNewPlan()" class="btn btn-light">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    New Plan
+                </button>
+                <button onclick="deleteCurrentPlan()" class="btn btn-danger-light">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    Delete Plan
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-container">
+        <main>
+            <!-- Mobile Header -->
+            <div class="mobile-header">
+                <h1 class="sidebar-title">Study Tracker</h1>
+                <button class="btn-icon" id="open-sidebar" aria-label="Menu">
+                    <svg class="icon-lg" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                </button>
+            </div>
+
+            <div class="content-scroll" id="scroll-container">
+                
+                <!-- Plan Controls Header -->
+                <div class="plan-controls">
+                    <div>
+                        <h1 style="font-size: 1.5rem; font-weight: 800; margin: 0 0 0.25rem 0;">Weekly Plan</h1>
+                        <div class="flex items-center">
+                            <span class="text-sm text-muted">Manage your 7-day schedule</span>
+                            <span id="save-status" class="status-badge ml-2">
+                                <svg class="icon" viewBox="0 0 24 24" style="width: 12px; height: 12px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                Saved
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div style="flex: 1;">
+                            <label class="text-xs font-bold text-muted mb-1" style="display:block;">Load Plan</label>
+                            <select id="plan-selector" onchange="switchPlan(this.value)" class="form-control"></select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label class="text-xs font-bold text-muted mb-1" style="display:block;">Current Name</label>
+                            <div class="input-group">
+                                <input type="text" id="plan-name-input" class="form-control">
+                                <button onclick="savePlanName()" class="btn btn-primary" style="padding: 0 0.75rem;">
+                                    <svg class="icon" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Days Container (Swipeable on Mobile) -->
+                <div id="days-container">
+                    <!-- Injected by JS -->
+                </div>
+
+            </div>
+
+            <!-- Mobile Day Navigation Indicator/Hint -->
+            <div class="mobile-day-indicator">
+                <span id="mobile-day-hint">Day 1 of 7</span>
+                <div class="text-xs text-muted" style="margin-top: 2px;">Swipe to navigate</div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Data & Config ---
+        const TOTAL_DAYS = 7;
+        const ROWS_PER_DAY = 5;
+
+        const subjectsData = {
+            "": [], 
+            "Art & Culture": ["Indian culture: Art Forms, literature and Architecture"],
+            "History (Modern India & World)": ["Modern Indian history", "Freedom Struggle", "Post-independence", "World history", "World wars", "Colonization/Decolonization"],
+            "Indian Society": ["Diversity of India", "Role of women", "Population", "Poverty", "Urbanization", "Globalization effects"],
+            "Geography": ["Physical geography", "Natural resources", "Industry location factors", "Geophysical phenomena"],
+            "Polity & Constitution": ["Constitution features", "Union and States", "Federal structure", "Parliament", "Judiciary", "Constitutional bodies"],
+            "Governance & Social Justice": ["Government policies", "NGOs/SHGs", "Welfare schemes", "Health/Education/HR", "Poverty/Hunger", "E-governance"],
+            "International Relations": ["India & neighborhood", "Global groupings", "Indian diaspora", "International institutions"],
+            "Economy": ["Indian Economy", "Inclusive growth", "Budgeting", "Liberalization", "Infrastructure", "Investment models"],
+            "Agriculture": ["Crops patterns", "Irrigation", "Transport/Marketing", "Farm subsidies", "PDS", "Food processing"],
+            "Science & Technology": ["Everyday applications", "Indigenization", "IT/Space/Robotics/Bio-tech"],
+            "Environment & Disaster Management": ["Conservation", "Pollution", "Disaster management"],
+            "Internal Security": ["Extremism", "Cyber security", "Money-laundering", "Border areas", "Security forces"],
+            "Ethics, Integrity & Aptitude": ["Ethics & Human Interface", "Attitude", "Aptitude", "Emotional intelligence", "Moral thinkers", "Probity in Governance"],
+            "Current Affairs": [],
+            "Answer Writing": [],
+            "PYQ": [],
+            "Atlas": []
+        };
+
+        // --- State ---
+        let plans = {};
+        let currentPlanId = "";
+        let appData = {};
+        let currentViewDay = 1; // 1-based index for currently visible day
+
+        // --- Init ---
+        function initApp() {
+            // Load Plan Data
+            const storedPlans = localStorage.getItem('studyTrackerPlans');
+            const storedCurrentId = localStorage.getItem('studyTrackerCurrentId');
+
+            if (storedPlans) {
+                plans = JSON.parse(storedPlans);
+            } else {
+                const defaultId = Date.now().toString();
+                plans = { [defaultId]: { name: "My First Plan", data: {} } };
+            }
+
+            currentPlanId = (storedCurrentId && plans[storedCurrentId]) ? storedCurrentId : Object.keys(plans)[0];
+            appData = plans[currentPlanId].data || {};
+
+            // Load View State (Last Day Viewed)
+            const storedDay = localStorage.getItem('studyTrackerLastDay');
+            if (storedDay) {
+                currentViewDay = parseInt(storedDay, 10);
+                if (currentViewDay < 1 || currentViewDay > TOTAL_DAYS) currentViewDay = 1;
+            }
+
+            renderUI();
+            updateProgress();
+            
+            // If on mobile (or just generally), ensure correct day is shown
+            updateMobileView();
+
+            setupEventListeners();
+        }
+
+        // --- Rendering ---
+        function renderUI() {
+            updateHeaderUI();
+            renderNavigation();
+            renderDays();
+            restoreInputValues();
+        }
+
+        function updateHeaderUI() {
+            const selector = document.getElementById('plan-selector');
+            selector.innerHTML = '';
+            Object.entries(plans).forEach(([id, plan]) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = plan.name;
+                if (id === currentPlanId) option.selected = true;
+                selector.appendChild(option);
+            });
+            document.getElementById('plan-name-input').value = plans[currentPlanId].name;
+        }
+
+        function renderNavigation() {
+            const nav = document.getElementById('nav-links');
+            let html = '';
+            for (let i = 1; i <= TOTAL_DAYS; i++) {
+                // For desktop: anchor link. For mobile: simple button action.
+                // We'll prevent default anchor behavior in JS
+                html += `
+                    <a href="#" onclick="navigateToDay(${i}); return false;" class="nav-link" id="nav-day-${i}">
+                        <div class="nav-badge">${i}</div>
+                        Day ${i}
+                    </a>
+                `;
+            }
+            nav.innerHTML = html;
+        }
+
+        function renderDays() {
+            const container = document.getElementById('days-container');
+            let html = '';
+            const subOpts = Object.keys(subjectsData).map(s => `<option value="${s}">${s===""?"Select Subject...":s}</option>`).join('');
+
+            for (let day = 1; day <= TOTAL_DAYS; day++) {
+                let rows = '';
+                for (let r = 1; r <= ROWS_PER_DAY; r++) {
+                    const uid = `d${day}-r${r}`;
+                    rows += `
+                        <div class="table-row">
+                            <div class="col-check">
+                                <input type="checkbox" id="check-${uid}" class="checkbox" onchange="handleCheck('${uid}')">
+                            </div>
+                            <div class="col-content">
+                                <div class="row-stack">
+                                    <select id="sub-${uid}" class="form-control" onchange="handleSubject('${uid}')">${subOpts}</select>
+                                    <select id="top-${uid}" class="form-control" onchange="handleInput('${uid}', 'topic', this.value)" disabled>
+                                        <option value="">Select Topic...</option>
+                                    </select>
+                                </div>
+                                <input type="text" id="rem-${uid}" class="form-control" style="margin-top: 0.5rem;" placeholder="Notes..." oninput="handleInput('${uid}', 'remark', this.value)">
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Add 'day-card' class. Mobile CSS handles hiding/showing based on 'active' class
+                html += `
+                    <div id="day-card-${day}" class="day-card ${day === currentViewDay ? 'active' : ''}">
+                        <div class="day-card-header">
+                            <span style="font-weight:bold; font-size:1.1rem;">Day ${day}</span>
+                            <span style="background:rgba(255,255,255,0.2); font-size:0.75rem; padding:2px 8px; border-radius:10px;">5 Tasks</span>
+                        </div>
+                        <div class="day-content-wrapper">
+                            ${rows}
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // --- Logic & Actions ---
+
+        function navigateToDay(dayIndex) {
+            currentViewDay = dayIndex;
+            localStorage.setItem('studyTrackerLastDay', currentViewDay);
+            
+            // Mobile: Update active class
+            document.querySelectorAll('.day-card').forEach(el => el.classList.remove('active'));
+            const activeCard = document.getElementById(`day-card-${dayIndex}`);
+            if(activeCard) activeCard.classList.add('active');
+
+            // Mobile: Update footer text
+            updateMobileView();
+
+            // Desktop: Scroll to element
+            if (window.innerWidth >= 768) {
+                activeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Mobile: Close sidebar
+            if (window.innerWidth < 1024) {
+                toggleSidebar(false);
+            }
+            
+            // Update Nav Highlight
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-day-${dayIndex}`).classList.add('active');
+        }
+
+        function updateMobileView() {
+            document.getElementById('mobile-day-hint').textContent = `Day ${currentViewDay} of ${TOTAL_DAYS}`;
+            
+            // Ensure nav highlight is correct on load
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            const navEl = document.getElementById(`nav-day-${currentViewDay}`);
+            if(navEl) navEl.classList.add('active');
+        }
+
+        function saveEverything() {
+            plans[currentPlanId].data = appData;
+            localStorage.setItem('studyTrackerPlans', JSON.stringify(plans));
+            localStorage.setItem('studyTrackerCurrentId', currentPlanId);
+            updateProgress();
+            showStatus('saved');
+        }
+
+        // --- Event Handlers (Input) ---
+
+        function handleCheck(uid) {
+            const cb = document.getElementById(`check-${uid}`);
+            if(!appData[uid]) appData[uid] = {};
+            appData[uid].checked = cb.checked;
+            
+            // Toggle row color
+            const row = cb.closest('.table-row');
+            if(cb.checked) row.classList.add('done');
+            else row.classList.remove('done');
+            
+            showStatus('saving');
+            saveEverything();
+        }
+
+        function handleSubject(uid) {
+            const sel = document.getElementById(`sub-${uid}`);
+            const val = sel.value;
+            if(!appData[uid]) appData[uid] = {};
+            appData[uid].subject = val;
+            appData[uid].topic = ""; // reset topic
+            
+            updateTopicDropdown(uid, val);
+            showStatus('saving');
+            saveEverything();
+        }
+
+        let debounceTimer;
+        function handleInput(uid, field, val) {
+            if(!appData[uid]) appData[uid] = {};
+            appData[uid][field] = val;
+            
+            showStatus('saving');
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(saveEverything, 800);
+        }
+
+        function updateTopicDropdown(uid, subject, selectedTopic = "") {
+            const topSel = document.getElementById(`top-${uid}`);
+            const topics = subjectsData[subject] || [];
+            
+            if (subject === "" || topics.length === 0) {
+                topSel.disabled = true;
+                topSel.innerHTML = (subject !== "" && topics.length === 0) ? '<option>N/A</option>' : '<option value="">Select Topic...</option>';
+            } else {
+                topSel.disabled = false;
+                let html = '<option value="">Select Topic...</option>';
+                topics.forEach(t => {
+                    const sel = t === selectedTopic ? 'selected' : '';
+                    html += `<option value="${t}" ${sel}>${t}</option>`;
+                });
+                topSel.innerHTML = html;
+            }
+            topSel.value = selectedTopic;
+        }
+
+        function restoreInputValues() {
+            Object.keys(appData).forEach(uid => {
+                const data = appData[uid];
+                const check = document.getElementById(`check-${uid}`);
+                const sub = document.getElementById(`sub-${uid}`);
+                const top = document.getElementById(`top-${uid}`);
+                const rem = document.getElementById(`rem-${uid}`);
+
+                if(check && data.checked) {
+                    check.checked = true;
+                    check.closest('.table-row').classList.add('done');
+                }
+                if(sub && data.subject) {
+                    sub.value = data.subject;
+                    updateTopicDropdown(uid, data.subject, data.topic);
+                }
+                if(rem && data.remark) rem.value = data.remark;
+            });
+        }
+
+        function updateProgress() {
+            let total = TOTAL_DAYS * ROWS_PER_DAY;
+            let done = 0;
+            Object.values(appData).forEach(d => { if(d.checked) done++; });
+            let pct = Math.round((done/total)*100);
+            document.getElementById('total-progress').textContent = pct + "%";
+            document.getElementById('progress-bar').style.width = pct + "%";
+        }
+
+        // --- Swipe Logic ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const mainContainer = document.querySelector('main');
+
+        function handleTouchStart(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+
+        function handleTouchEnd(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipeGesture();
+        }
+
+        function handleSwipeGesture() {
+            // Only swipe on mobile view (<1024px generally, or logic based)
+            if (window.innerWidth >= 1024) return;
+
+            const threshold = 50; // min distance
+            if (touchEndX < touchStartX - threshold) {
+                // Swipe Left -> Next Day
+                if(currentViewDay < TOTAL_DAYS) navigateToDay(currentViewDay + 1);
+            }
+            if (touchEndX > touchStartX + threshold) {
+                // Swipe Right -> Prev Day
+                if(currentViewDay > 1) navigateToDay(currentViewDay - 1);
+            }
+        }
+
+        // --- Sidebar & General UI ---
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleSidebar(show) {
+            if(show) {
+                sidebar.classList.add('open');
+                overlay.classList.add('show');
+            } else {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('open-sidebar').addEventListener('click', () => toggleSidebar(true));
+            document.getElementById('close-sidebar').addEventListener('click', () => toggleSidebar(false));
+            overlay.addEventListener('click', () => toggleSidebar(false));
+
+            // Swipe listeners
+            const touchZone = document.getElementById('days-container');
+            touchZone.addEventListener('touchstart', handleTouchStart, {passive: true});
+            touchZone.addEventListener('touchend', handleTouchEnd, {passive: true});
+        }
+
+        function showStatus(type) {
+            const badge = document.getElementById('save-status');
+            if(type === 'saving') {
+                badge.className = 'status-badge status-saving visible';
+                badge.innerHTML = 'Saving...';
+            } else {
+                badge.className = 'status-badge status-saved visible';
+                badge.innerHTML = '<svg class="icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Saved';
+                setTimeout(() => badge.classList.remove('visible'), 2000);
+            }
+        }
+
+        // --- Plan Management (Basic) ---
+        function createNewPlan() {
+            const newId = Date.now().toString();
+            plans[newId] = { name: "New Plan", data: {} };
+            switchPlan(newId);
+            alert("New plan created.");
+        }
+        function switchPlan(id) {
+            currentPlanId = id;
+            appData = plans[id].data || {};
+            
+            // Clear UI inputs first
+            document.querySelectorAll('input[type="checkbox"]').forEach(c => { c.checked = false; c.closest('.table-row').classList.remove('done'); });
+            document.querySelectorAll('input[type="text"]').forEach(i => i.value = "");
+            document.querySelectorAll('select').forEach(s => {
+                if(s.id.startsWith('sub')) s.value = "";
+                if(s.id.startsWith('top')) updateTopicDropdown(s.id.split('-')[1]+'-'+s.id.split('-')[2], "");
+            });
+
+            restoreInputValues();
+            saveEverything();
+            updateHeaderUI();
+            if(window.innerWidth < 1024) toggleSidebar(false);
+        }
+        function savePlanName() {
+            const val = document.getElementById('plan-name-input').value.trim();
+            if(val) {
+                plans[currentPlanId].name = val;
+                saveEverything();
+                updateHeaderUI();
+            }
+        }
+        function deleteCurrentPlan() {
+            if(Object.keys(plans).length <= 1) return alert("Cannot delete last plan");
+            if(confirm("Delete this plan?")) {
+                delete plans[currentPlanId];
+                switchPlan(Object.keys(plans)[0]);
+            }
+        }
+
+        // Boot
+        window.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>

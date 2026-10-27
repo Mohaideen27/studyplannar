@@ -1,0 +1,27 @@
+{
+  "subjects": [
+    { "id": "1", "name": "Economics", "color": "#6366f1" },
+    { "id": "1", "name": "Polity", "color": "#6366f1" },
+    { "id": "1", "name": "History", "color": "#6366f1" }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Learn React Hooks",
+      "subjectId": "1",
+      "dueDate": "2026-10-28",
+      "priority": "High",
+      "status": "Pending",
+      "estimatedMinutes": 60
+    },
+    {
+      "id": "2",
+      "title": "Practice JavaScript Arrays",
+      "subjectId": "2",
+      "dueDate": "2026-10-27",
+      "priority": "Medium",
+      "status": "Completed",
+      "estimatedMinutes": 30
+    }
+  ]
+}
