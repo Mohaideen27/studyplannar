@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:3000/";
+const API = "http://localhost:3000";
 
 //Subject Api
 
@@ -29,7 +29,7 @@ export const getTasks = async () => {
   return res.data;
 };
 
-export const addTasks = async (task) => {
+export const addTask = async (task) => {
   const res = await axios.post(`${API}/tasks`, task);
   return res.data;
 };
