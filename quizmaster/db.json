@@ -1,0 +1,220 @@
+{
+  "quizzes": [
+    {
+      "id": "1",
+      "title": "React Fundamentals",
+      "category": "React",
+      "description": "Test your understanding of React basics.",
+      "timeLimit": 5
+    },
+    {
+      "id": "2",
+      "title": "JavaScript Basics",
+      "category": "JavaScript",
+      "description": "Test your JavaScript knowledge.",
+      "timeLimit": 5
+    },
+    {
+      "id": "3",
+      "title": "HTML Fundamentals",
+      "category": "HTML",
+      "description": "Learn and test HTML concepts.",
+      "timeLimit": 5
+    },
+    {
+      "id": "4",
+      "title": "CSS Fundamentals",
+      "category": "CSS",
+      "description": "Test your CSS knowledge.",
+      "timeLimit": 5
+    }
+  ],
+  "questions": [
+    {
+      "id": "1",
+      "quizId": "1",
+      "question": "What is React?",
+      "options": [
+        "A database",
+        "A JavaScript library",
+        "An operating system",
+        "A programming language"
+      ],
+      "correctAnswer": 1,
+      "explanation": "React is a JavaScript library for building user interfaces."
+    },
+    {
+      "id": "2",
+      "quizId": "1",
+      "question": "Which hook manages state in a functional component?",
+      "options": ["useEffect", "useRef", "useState", "useMemo"],
+      "correctAnswer": 2,
+      "explanation": "useState allows a component to store and update state."
+    },
+    {
+      "id": "3",
+      "quizId": "1",
+      "question": "What is JSX?",
+      "options": [
+        "A database query",
+        "A syntax extension for JavaScript",
+        "A CSS framework",
+        "A browser"
+      ],
+      "correctAnswer": 1,
+      "explanation": "JSX lets developers write HTML-like syntax in JavaScript."
+    },
+    {
+      "id": "4",
+      "quizId": "1",
+      "question": "What is the purpose of props?",
+      "options": [
+        "To pass data between components",
+        "To create a database",
+        "To style a page",
+        "To start a server"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Props allow a parent component to pass data to a child component."
+    },
+    {
+      "id": "5",
+      "quizId": "1",
+      "question": "Which hook is commonly used for side effects?",
+      "options": ["useState", "useEffect", "useMemo", "useCallback"],
+      "correctAnswer": 1,
+      "explanation": "useEffect is commonly used for side effects such as subscriptions and timers."
+    },
+    {
+      "id": "6",
+      "quizId": "2",
+      "question": "Which keyword declares a block-scoped variable that can be reassigned?",
+      "options": ["const", "let", "static", "fixed"],
+      "correctAnswer": 1,
+      "explanation": "let declares a block-scoped variable that can be reassigned."
+    },
+    {
+      "id": "7",
+      "quizId": "2",
+      "question": "Which method creates a new array by transforming each element?",
+      "options": ["filter()", "find()", "map()", "push()"],
+      "correctAnswer": 2,
+      "explanation": "map() creates a new array from the results of calling a function on each element."
+    },
+    {
+      "id": "8",
+      "quizId": "2",
+      "question": "Which operator checks strict equality?",
+      "options": ["=", "==", "===", "!="],
+      "correctAnswer": 2,
+      "explanation": "The === operator compares values without converting their types."
+    },
+    {
+      "id": "9",
+      "quizId": "2",
+      "question": "Which value represents an intentional absence of an assigned value?",
+      "options": [
+        "undefined",
+        "null",
+        "Both can represent absence of a value",
+        "Neither"
+      ],
+      "correctAnswer": 2,
+      "explanation": "null and undefined both represent absence of a value, but their meanings differ."
+    },
+    {
+      "id": "10",
+      "quizId": "2",
+      "question": "Which method filters an array based on a condition?",
+      "options": ["map()", "filter()", "join()", "sort()"],
+      "correctAnswer": 1,
+      "explanation": "filter() returns a new array containing elements that pass the condition."
+    },
+    {
+      "id": "11",
+      "quizId": "3",
+      "question": "Which HTML element creates a hyperlink?",
+      "options": ["<p>", "<a>", "<div>", "<h1>"],
+      "correctAnswer": 1,
+      "explanation": "The a element creates a hyperlink using its href attribute."
+    },
+    {
+      "id": "12",
+      "quizId": "3",
+      "question": "Which element represents the largest heading by default?",
+      "options": ["<h6>", "<head>", "<h1>", "<title>"],
+      "correctAnswer": 2,
+      "explanation": "The h1 element represents the highest-level heading."
+    },
+    {
+      "id": "13",
+      "quizId": "3",
+      "question": "Which attribute provides alternative text for an image?",
+      "options": ["src", "href", "alt", "title-only"],
+      "correctAnswer": 2,
+      "explanation": "The alt attribute provides a text alternative for an image."
+    },
+    {
+      "id": "14",
+      "quizId": "3",
+      "question": "Which element creates an unordered list?",
+      "options": ["<ol>", "<ul>", "<li>", "<list>"],
+      "correctAnswer": 1,
+      "explanation": "The ul element creates an unordered list."
+    },
+    {
+      "id": "15",
+      "quizId": "3",
+      "question": "Which element is used to create a form?",
+      "options": ["<form>", "<section>", "<article>", "<footer>"],
+      "correctAnswer": 0,
+      "explanation": "The form element groups controls for submitting user input."
+    },
+    {
+      "id": "16",
+      "quizId": "4",
+      "question": "Which property changes text color?",
+      "options": ["background", "font-size", "color", "border"],
+      "correctAnswer": 2,
+      "explanation": "The color property sets the foreground color of text."
+    },
+    {
+      "id": "17",
+      "quizId": "4",
+      "question": "Which property adds space inside an element's border?",
+      "options": ["margin", "padding", "gap-only", "outline"],
+      "correctAnswer": 1,
+      "explanation": "Padding is the space between an element's content and its border."
+    },
+    {
+      "id": "18",
+      "quizId": "4",
+      "question": "Which CSS layout system uses rows and columns?",
+      "options": ["CSS Grid", "Float only", "Text layout", "Inline text"],
+      "correctAnswer": 0,
+      "explanation": "CSS Grid is designed for two-dimensional layouts with rows and columns."
+    },
+    {
+      "id": "19",
+      "quizId": "4",
+      "question": "Which property rounds an element's corners?",
+      "options": [
+        "border-style",
+        "border-radius",
+        "corner-shape-only",
+        "outline-radius"
+      ],
+      "correctAnswer": 1,
+      "explanation": "border-radius controls how rounded an element's corners are."
+    },
+    {
+      "id": "20",
+      "quizId": "4",
+      "question": "Which property controls the space outside an element's border?",
+      "options": ["padding", "margin", "line-height", "font-weight"],
+      "correctAnswer": 1,
+      "explanation": "Margin controls the space outside an element's border."
+    }
+  ],
+  "attempts": []
+}
